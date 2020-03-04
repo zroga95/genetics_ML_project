@@ -1,0 +1,20 @@
+Preliminary Release of S. cerevisiae strain VL3 sequences.
+
+4/29/2011
+
+This directory contains 4 files describing the genome of S. cerevisiae strain
+VL3 (PMID: 21304888, WGS ID: AEJS00000000). The files are:
+
+a genome fasta file: VL3_AWRI_2011_AEJS01000000.fsa
+a nucleic acid coding sequence file: VL3_AEJS01000000_cds.fsa
+a protein sequence file: VL3_AEJS01000000_pep.fsa
+a GFF file: VL3_AEJS01000000.gff
+
+Feature definitions (for coding sequences and features in the gff file) were
+assigned using Jim Kent's liftOver program with a blat alignment vs. the R64
+(current) S288C reference sequence.
+
+This assembly contains 125 contigs (coverage: 20X, mean contig size: 93257,
+N50: 293399). Using liftOver, 6322 SGD gene features were found in the assembly.
+
+
