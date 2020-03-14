@@ -145,8 +145,7 @@ def likelihoods(seqs, u_t, l, names2, max_len):
                         elif p>=len(probs_matrix[int(rightchildindx/2)]):
                            columns= probs_matrix[int(leftchildindx/2)][p]
                         else:
-                           columns= probs_matrix[int(rightchildindx/2)][p] 
-                    
+                           columns= probs_matrix[int(rightchildindx/2)][p]                
 
                 rows.append(columns)
             probs_matrix.append(rows)                
@@ -265,10 +264,10 @@ def Viterbi(non_matrix, con_matrix, mu, vu):
 def main():
     #for genes in ["YKR069W_", "YGR155W_","YFR030W_", "YBR213W_", "YMR307W_","YAL022C_", "YLR289W_","YOL030W_", "YAL022C_", "YLR289W_","YBR213W_", "YGR155W_"]: #
         src_gene_files = "C:/Users/Zachary_Roga/Documents/past semesters/cs4775/Final_project_data/"
-        
+
         if not os.path.exists(src_gene_files):
             src_gene_files = input("please link the Final_project_data folder")
-        gene_results_path = src_gene_files + "Final_project_datatest"
+        gene_results_path = src_gene_files #+ "Final_project_datatest"
 
         genes_loc=src_gene_files + 'apoe.fa'
     #    genes_loc='C:\Users\Zachary_Roga\Documents\cs4775\\apoe.fa'

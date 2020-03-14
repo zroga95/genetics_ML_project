@@ -146,7 +146,6 @@ def likelihoods(seqs, u_t, l, names2, max_len):
                            columns= probs_matrix[int(leftchildindx/2)][p]
                         else:
                            columns= probs_matrix[int(rightchildindx/2)][p] 
-                    
 
                 rows.append(columns)
             probs_matrix.append(rows)                
@@ -269,17 +268,7 @@ def Viterbi(non_matrix, con_matrix, mu, vu):
         
     #use the backpointers to create a path
     #print viterbiMat
-    
-def main():
-    src_gene_files = "C:/Users/Zachary_Roga/Documents/past semesters/cs4775/Final_project_data/"
-
-    if not os.path.exists(src_gene_files):
-        src_gene_files = input("please link the Final_project_data folder")
-    gene_results_path = src_gene_files + "Final_project_datatest"
-    
-    for genes in ["YMR307W_", "YOL030W_","YFR030W_", "YGR155W_",
-        "YBR213W_", "YKR069W_", "YAL022C_", "YLR289W_"]: #
-        genes_loc=gene_results_path+ genes+".txt"
+def phastconners(genes_loc, src_gene_files, mu):
     #    genes_loc='C:\Users\Zachary_Roga\Documents\cs4775\\apoe.fa'
         trees_loc= src_gene_files+"newick.txt"
         seqs=[]
@@ -312,7 +301,6 @@ def main():
         bp_order=["A","T","G","C"]
         pi=[0.25, 0.25, 0.25, 0.25] #background probabilities vector
         p=0.325       #scaling parameter
-        mu=0.05
         vu=mu
         lens=[]
         for i in seqs:
@@ -338,8 +326,10 @@ def main():
                 0.000001, 0.000001), BinaryTree("Kyokai7"),0.000001, 0.001907), BinaryTree("M22"), 0.000001, 0.000953),
                 BinaryTree("EC1118-BC187-AWRI796", BinaryTree("EC1118"),BinaryTree("BC187-AWRI796",BinaryTree("BC187"),
                 BinaryTree("AWRI796"),0.000001,0.001010), 0.000001, 0.000001), 0.000953, 0.000001)   
-            BaseTree=genBaseTree(1, B)
-            #names2=["H","M","R","D"]
+            
+            BaseTree=genBaseTree(1, B) if gene_parser_type == "Y" else genTestTree(p, B)
+
+            names2=["H","M","R","D"] if gene_parser_type != "Y" else names2
             pruneTree(BaseTree, names2)
             newick=[]
             Transverse_tree(BaseTree,newick)
@@ -349,7 +339,9 @@ def main():
             #ender=-999999.0
             #while ender>conserve_start_low:#attempt at the second part of algorithm, however, their technique isnt in rightup and this didnt converge
             #conserve_start_low=ender
-            conserveTree=genBaseTree(p, B)
+
+            conserveTree=genBaseTree(p, B) if gene_parser_type == "Y"  else genTestTree(p, B)
+
             pruneTree(conserveTree, names2)
             newickCon=[]
             Transverse_tree(conserveTree,newickCon)
@@ -404,26 +396,46 @@ def main():
         fors=[]
         backs=[]
         test_data=[]
-        dashes = [20, 10, 10, 5]
         for i in range(0,len(nonStates)):
             fors.append(Forward(nonStates[i], conStates[i], mu, vu))    
             backs.append(Backward(nonStates[i], conStates[i], mu, vu))    
             test_data.append(ForBack(fors[i],backs[i]))
         model_check=[]
+        tester_data=[]
         for i in range(0,len(test_data[len(test_data)-1])):
             model_check.append(math.exp(test_data[len(test_data)-1][i][1]))
-        print ("testing model on gene "+str(genes))
+            tester_data.append(math.exp(test_data[len(test_data)-1][i][0]))
         print ("final values of mu and vu: "+str(mu)+ ", "+ str(vu))
         print (nonliker_seq[len(nonliker_seq)-1], "non-conserved sequence log likelihood")#, genes
         print (coliker_seq[len(coliker_seq)-1], "conserved sequence log likelihood")#, genes    
-        plt.figure()
-        plt.plot(model_check)
-        for i in range(0,len(lens)):
-            line1=plt.axvline(x=lens[i], color="r", lw=0.5, )
-            line1.set_dashes(dashes)
-        plt.xlabel(str(genes)+ "length of bp")
-        plt.ylabel("probability of conservation model")
-        plt.show()
+        return model_check, lens
+
+    
+def main():
+    src_gene_files = "C:/Users/Zachary_Roga/Documents/past semesters/cs4775/Final_project_data/"
+    dashes = [20, 10, 10, 5]
+    if not os.path.exists(src_gene_files):
+        src_gene_files = str(input("please link the Final_project_data folder"))
+    gene_results_path = src_gene_files + "Final_project_datatest"
+    if gene_parser_type == 'Y':
+        gene_list = ["YMR307W_", "YOL030W_","YFR030W_", "YGR155W_",
+        "YBR213W_", "YKR069W_", "YAL022C_", "YLR289W_"]
+        for genes in gene_list: #
+            genes_loc=gene_results_path+ genes+".txt"
+            model_check, lens = phastconners(genes_loc, src_gene_files, 0.05)
+            print ("testing model on gene "+str(genes))
+    else:
+        genes_loc = src_gene_files + 'apoe.fa'
+        model_check, lens = phastconners(genes_loc, src_gene_files, 0.25)
+    
+    plt.figure()
+    plt.plot(model_check)
+    for i in range(0,len(lens)):
+        line1=plt.axvline(x=lens[i], color="r", lw=0.5, )
+        line1.set_dashes(dashes)
+    plt.xlabel( "length of bp") #str(genes)+
+    plt.ylabel("probability of conservation model")
+    plt.show()
         
 #plots looked very similar so checked that they aren't actually symmetric
 #    equality=[]
@@ -431,5 +443,8 @@ def main():
 #        equality.append(test_data[len(test_data)-1][i][1]==test_data[len(test_data)-1][-i][1])
 #    plt.plot(equality)
 if __name__ == "__main__":
+    gene_parser_type = ""
+    while gene_parser_type != "Y" and gene_parser_type!="N":
+        gene_parser_type =  str(input("Run full Program? Y/N"))
     main()
 #(((((((YLR293C_CLIB382:0.000001,(YLR293C_FostersO:0.001010,YLR293C_FostersB:0.000001):0.000001):0.000001,YLR293C_VL3:0.000001):0.000001,YLR293C_CBS7960:0.000001):0.000001,YLR293C_AWRI1631:0.000001):0.000001,YLR293C_Kyokai7:0.001907):0.000001,YLR293C_M22:0.000953):0.000953,YLR293C_LalvinQA23:0.000001,(YLR293C_EC1118:0.000001,(YLR297W_BC187:0.000001,YLR293C_AWRI796:0.001010):0.000001):0.000001);
