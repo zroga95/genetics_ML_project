@@ -15,6 +15,11 @@ from math import log
 import argparse
 import random
 import re
+import plotly as py
+from plotly.subplots import make_subplots
+import plotly.express as px
+import plotly.graph_objects as go
+
 #create a binary tree with branch lengths that are scaled
 def sumLogProb(a, b):
     if a > b: 
@@ -410,6 +415,15 @@ def phastconners(genes_loc, src_gene_files, mu):
         print (coliker_seq[len(coliker_seq)-1], "conserved sequence log likelihood")#, genes    
         return model_check, lens
 
+def figures_to_html(figs, filename="dashboard.html"):
+    with open(filename, 'w') as dashboard:
+        dashboard.write("<html><head></head><body>" + "\n")
+        for fig in figs:
+            inner_html = fig.to_html().split('<body>')[1].split('</body>')[0]
+            dashboard.write(inner_html)
+        dashboard.write("</body></html>" + "\n")
+
+
     
 def main():
     src_gene_files = "C:/Users/Zachary_Roga/Documents/past semesters/cs4775/Final_project_data/"
@@ -417,25 +431,47 @@ def main():
     if not os.path.exists(src_gene_files):
         src_gene_files = str(input("please link the Final_project_data folder"))
     gene_results_path = src_gene_files + "Final_project_datatest"
+
+    #fig = make_subplots(rows=7, cols=1)
+
     if gene_parser_type == 'Y':
         gene_list = ["YMR307W_", "YOL030W_","YFR030W_", "YGR155W_",
         "YBR213W_", "YKR069W_", "YAL022C_", "YLR289W_"]
+        fig_list = []
         for genes in gene_list: #
             genes_loc=gene_results_path+ genes+".txt"
             model_check, lens = phastconners(genes_loc, src_gene_files, 0.05)
             print ("testing model on gene "+str(genes))
+            fig = px.line(model_check)
+            for i in range(0,len(lens)):
+                fig.add_vline(x=lens[i], line_width=0.5, line_dash="dash", line_color="red")
+            fig.update_layout(title="Sequence Convservation in " + str(genes), xaxis_title="length of bp",
+                yaxis_title="probability of conservation model",
+                height= 400)
+            fig_list.append(fig)
+
+        figures_to_html(fig_list)
+        print('plot of genes saved to dashboard.html')
+
+
     else:
         genes_loc = src_gene_files + 'apoe.fa'
         model_check, lens = phastconners(genes_loc, src_gene_files, 0.25)
+
+        fig = px.line(model_check)
+        for i in range(0,len(lens)):
+            fig.add_vline(x=lens[i], line_width=0.5, line_dash="dash", line_color="red")
+        fig.update_layout(title="Sequence Convservation", xaxis_title="length of bp",
+                yaxis_title="probability of conservation model")
+        figures_to_html([fig])
+        fig.show()
+
+
     
-    plt.figure()
-    plt.plot(model_check)
-    for i in range(0,len(lens)):
-        line1=plt.axvline(x=lens[i], color="r", lw=0.5, )
-        line1.set_dashes(dashes)
-    plt.xlabel( "length of bp") #str(genes)+
-    plt.ylabel("probability of conservation model")
-    plt.show()
+    
+
+    #fig.add_trace(nested, row=1, col=1)
+    
         
 #plots looked very similar so checked that they aren't actually symmetric
 #    equality=[]
