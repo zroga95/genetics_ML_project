@@ -1,3 +1,5 @@
+Results from a run of the genetics file across several genes are at https://zroga95.github.io/genetics_ML_project/
+
 This file explains how to use the Project contained within to detect conservation within genes across the strains contained in this folder.
 
 This project uses python 3.8.1 and requires numpy and matplotlib
